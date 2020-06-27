@@ -34,10 +34,16 @@ command.
 
 ## Deploy it
 Run the bootstrap for the stack
-```cdk bootstrap```
+
+```
+cdk bootstrap
+```
 
 And then deploy it
-```cdk deploy cdk-cowrie-honeypots```
+
+```
+cdk deploy cdk-cowrie-honeypots
+```
 
 And you're done!
 
