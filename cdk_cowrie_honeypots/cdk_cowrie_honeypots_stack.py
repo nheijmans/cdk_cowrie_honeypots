@@ -19,7 +19,7 @@ class CdkCowrieHoneypotsStack(core.Stack):
         # Container definition
         
         container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
-            image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
+            image=ecs.ContainerImage.from_registry("cowrie/cowrie"), 
             task_definition=task_definition)
 
         #container_definition.container_port=22
@@ -27,11 +27,11 @@ class CdkCowrieHoneypotsStack(core.Stack):
 
         # ECS Security Group definition
         sg_ssh = ec2.SecurityGroup(self, "honeypot-sg-ssh", vpc=vpc, description="Allow SSH to the honeypot")
-        sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
+        sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(2222))
 
         # Fargate service definition
         fargate_service = ecs.FargateService(self, "HoneypotFargate", cluster=cluster, 
             assign_public_ip=True, 
-            desired_count=2, 
+            desired_count=1, 
             security_group=sg_ssh, 
             task_definition=task_definition)
