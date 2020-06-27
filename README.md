@@ -1,33 +1,31 @@
+# Cloud Development Kit deployment for Cowrie honeypots!
 
-# Welcome to the Cloud Development Kit deployment for Cowrie honeypots!
-
-This is a project build with Python and AWS CDK. The goal is to have a SSH honeypot infrastructure deployed and destroyed within seconds and logged
-to a Splunk instance for persistence.   
+This is a project build with Python and AWS CDK. The goal is to have SSH honeypot infrastructure deployed and destroyed within seconds and logged to a Splunk instance for persistence.   
 
 The `cdk.json` file tells the CDK Toolkit how to execute this app.
-To manually create a virtualenv on MacOS and Linux:
+To manually create a virtualenv execute:
 
 ```
-$ python3 -m venv .env
+python3 -m venv .env
 ```
 
 After the init process completes and the virtualenv is created, you can use the following
 step to activate your virtualenv.
 
 ```
-$ source .env/bin/activate
+source .env/bin/activate
 ```
 
 Once the virtualenv is activated, you can install the required dependencies.
 
 ```
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.
 
 ```
-$ cdk synth
+cdk synth
 ```
 
 To add additional dependencies, for example other CDK libraries, just add
