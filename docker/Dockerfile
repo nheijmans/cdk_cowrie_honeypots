@@ -69,6 +69,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
       libssl1.1 \
       libffi6 \
       procps \
+      authbind \
       python3 && \
     rm -rf /var/lib/apt/lists/* && \
     ln -s /usr/bin/python3 /usr/local/bin/python
@@ -79,15 +80,20 @@ RUN chown -R ${COWRIE_USER}:${COWRIE_GROUP} ${COWRIE_HOME}
 ENV PATH=${COWRIE_HOME}/cowrie-git/bin:${PATH}
 ENV STDOUT=yes
 
+# enable authbind
+RUN touch /etc/authbind/byport/22 && chown cowrie /etc/authbind/byport/22 && chmod 777 /etc/authbind/byport/22
+
 USER ${COWRIE_USER}
 WORKDIR ${COWRIE_HOME}/cowrie-git
 
 # preserve .dist file when etc/ volume is mounted
-RUN cp ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git
-VOLUME [ "/cowrie/cowrie-git/var", "/cowrie/cowrie-git/etc" ]
-RUN mv ${COWRIE_HOME}/cowrie-git/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git/etc
+# RUN cp ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git
+# VOLUME [ "/cowrie/cowrie-git/var", "/cowrie/cowrie-git/etc" ]
+# RUN mv ${COWRIE_HOME}/cowrie-git/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git/etc
+
+RUN cat ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg.dist | sed 's/2222/22/g' > ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg
 
 ENTRYPOINT [ "cowrie" ]
 CMD [ "start", "-n" ]
-EXPOSE 2222 2223
+EXPOSE 22
 
