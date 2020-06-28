@@ -36,7 +36,6 @@ class CdkCowrieHoneypotsStack(core.Stack):
         # ECS Security Group definition
         sg_ssh = ec2.SecurityGroup(self, "honeypot-sg-ssh", vpc=vpc, description="Allow SSH to the honeypot")
         sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
-        sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(2222))
 
         # Fargate service definition
         fargate_service = ecs.FargateService(self, "HoneypotFargate", cluster=cluster, 
