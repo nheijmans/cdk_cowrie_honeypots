@@ -1,5 +1,10 @@
-from aws_cdk import (core, aws_ec2 as ec2, aws_ecs as ecs,
-                     aws_ecs_patterns as ecs_patterns)
+from aws_cdk import (
+    core, 
+    aws_ec2 as ec2, 
+    aws_ecs as ecs,
+    aws_ecs_patterns as ecs_patterns,
+    aws_logs as logs
+)
 
 
 class CdkCowrieHoneypotsStack(core.Stack):
@@ -19,14 +24,21 @@ class CdkCowrieHoneypotsStack(core.Stack):
         # Container definition
         
         container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
-            image=ecs.ContainerImage.from_registry("cowrie/cowrie"), 
-            task_definition=task_definition)
+            #image=ecs.ContainerImage.from_registry("cowrie/cowrie"), 
+            image=ecs.ContainerImage.from_asset(directory = "docker"),
+            task_definition=task_definition,
+            logging=ecs.AwsLogDriver(
+                stream_prefix="cowrie",
+                log_retention=logs.RetentionDays.ONE_DAY,
+            ),
+        )
 
         #container_definition.container_port=22
         #container_definition.port_mappings=container_definition.find_port_mapping(container_port=2222)
 
         # ECS Security Group definition
         sg_ssh = ec2.SecurityGroup(self, "honeypot-sg-ssh", vpc=vpc, description="Allow SSH to the honeypot")
+        sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
         sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(2222))
 
         # Fargate service definition
@@ -34,4 +46,5 @@ class CdkCowrieHoneypotsStack(core.Stack):
             assign_public_ip=True, 
             desired_count=1, 
             security_group=sg_ssh, 
-            task_definition=task_definition)
+            task_definition=task_definition
+        )
