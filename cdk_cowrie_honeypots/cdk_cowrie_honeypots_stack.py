@@ -24,17 +24,14 @@ class CdkCowrieHoneypotsStack(core.Stack):
         # Container definition
         
         container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
-            #image=ecs.ContainerImage.from_registry("cowrie/cowrie"), 
-            image=ecs.ContainerImage.from_asset(directory = "docker"),
+            image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
+            #image=ecs.ContainerImage.from_asset(directory = "docker"),
             task_definition=task_definition,
             logging=ecs.AwsLogDriver(
                 stream_prefix="cowrie",
                 log_retention=logs.RetentionDays.ONE_DAY,
             ),
         )
-
-        #container_definition.container_port=22
-        #container_definition.port_mappings=container_definition.find_port_mapping(container_port=2222)
 
         # ECS Security Group definition
         sg_ssh = ec2.SecurityGroup(self, "honeypot-sg-ssh", vpc=vpc, description="Allow SSH to the honeypot")
