@@ -22,8 +22,8 @@ class CdkCowrieHoneypotsStack(core.Stack):
 
         # Container definition
         container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
-            #image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
-            image=ecs.ContainerImage.from_asset(directory = "docker"),
+            image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
+            #image=ecs.ContainerImage.from_asset(directory = "docker"),
             task_definition=task_definition,
             stop_timeout=core.Duration.seconds(2),
             logging=ecs.AwsLogDriver(
