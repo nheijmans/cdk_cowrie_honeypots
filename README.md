@@ -1,6 +1,6 @@
 # Cloud Development Kit deployment for Cowrie honeypots!
 
-This is a project build with Python and AWS CDK. The goal is to have SSH honeypot infrastructure deployed and destroyed within seconds and logged to to CloudWatch for persistence so a Splunk instance can ingest it (for example).
+This is a project build with Python and AWS CDK. The goal is to have SSH honeypot infrastructure deployed and destroyed within seconds and logged to to CloudWatch for persistence or a Splunk instance can ingest it (for example).
 
 The `cdk.json` file tells the CDK Toolkit how to execute this app.
 To manually create a virtualenv execute:
@@ -46,6 +46,9 @@ cdk deploy cdk-cowrie-honeypots
 ```
 
 And you're done!
+
+## Infrastructure overview
+![CDK Cowrie infrastructure](https://github.com/nheijmans/cdk_cowrie_honeypots/raw/master/visual/cdk-honeypots-infra-visual.jpg)
 
 ## Useful CDK commands
 
