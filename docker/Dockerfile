@@ -1,9 +1,7 @@
-# This Dockerfile contains two images, `builder` and `runtime`.
-# `builder` contains all necessary code to build
-# `runtime` is stripped down.
+# Docker build for Cowrie container that exposes port 22
+# Heavily nspired by the 'docker-cowrie' container file created by Michiel Oosterhof; https://github.com/cowrie/docker-cowrie
 
-FROM debian:buster-slim as builder
-LABEL maintainer="Michel Oosterhof <michel@oosterhof.net>"
+FROM ubuntu:latest as builder
 
 ENV COWRIE_GROUP=cowrie \
     COWRIE_USER=cowrie \
@@ -20,6 +18,7 @@ RUN groupadd -r -g 1000 ${COWRIE_GROUP} && \
 # Set up Debian prereqs
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && \
+    apt-get dist-upgrade -y  && \
     apt-get install -y \
         -o APT::Install-Suggests=false \
         -o APT::Install-Recommends=false \
@@ -35,10 +34,11 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
       python3-virtualenv \
       libsnappy-dev \
       default-libmysqlclient-dev && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y
 
 # Build a cowrie environment from github master HEAD.
-
 USER ${COWRIE_USER}
 
 RUN git clone --separate-git-dir=/tmp/cowrie.git https://github.com/cowrie/cowrie ${COWRIE_HOME}/cowrie-git && \
@@ -51,8 +51,8 @@ RUN git clone --separate-git-dir=/tmp/cowrie.git https://github.com/cowrie/cowri
       pip install --no-cache-dir --upgrade -r ${COWRIE_HOME}/cowrie-git/requirements.txt && \
       pip install --no-cache-dir --upgrade -r ${COWRIE_HOME}/cowrie-git/requirements-output.txt
 
-FROM debian:buster-slim AS runtime
-LABEL maintainer="Michel Oosterhof <michel@oosterhof.net>"
+
+FROM ubuntu:latest as runtime
 
 ENV COWRIE_GROUP=cowrie \
     COWRIE_USER=cowrie \
@@ -63,16 +63,19 @@ RUN groupadd -r -g 1000 ${COWRIE_GROUP} && \
 
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && \
+    apt-get dist-upgrade -y && \
     apt-get install -y \
         -o APT::Install-Suggests=false \
         -o APT::Install-Recommends=false \
       libssl1.1 \
-      libffi6 \
+      libffi7 \
       procps \
       authbind \
       python3 && \
     rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/bin/python3 /usr/local/bin/python
+    ln -s /usr/bin/python3 /usr/local/bin/python && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y
 
 COPY --from=builder ${COWRIE_HOME} ${COWRIE_HOME}
 RUN chown -R ${COWRIE_USER}:${COWRIE_GROUP} ${COWRIE_HOME}
@@ -86,14 +89,9 @@ RUN touch /etc/authbind/byport/22 && chown cowrie /etc/authbind/byport/22 && chm
 USER ${COWRIE_USER}
 WORKDIR ${COWRIE_HOME}/cowrie-git
 
-# preserve .dist file when etc/ volume is mounted
-# RUN cp ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git
-# VOLUME [ "/cowrie/cowrie-git/var", "/cowrie/cowrie-git/etc" ]
-# RUN mv ${COWRIE_HOME}/cowrie-git/cowrie.cfg.dist ${COWRIE_HOME}/cowrie-git/etc
-
+# change daemon port to 22
 RUN cat ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg.dist | sed 's/2222/22/g' > ${COWRIE_HOME}/cowrie-git/etc/cowrie.cfg
 
 ENTRYPOINT [ "cowrie" ]
 CMD [ "start", "-n" ]
 EXPOSE 22
-

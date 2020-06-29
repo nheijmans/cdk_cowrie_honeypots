@@ -6,14 +6,13 @@ from aws_cdk import (
     aws_logs as logs
 )
 
-
 class CdkCowrieHoneypotsStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # Create the VPC for the honeypot(s)
-        vpc = ec2.Vpc(self, "HoneypotVpc", max_azs=3)     # default is all AZs in region
+        # Create the VPC for the honeypot(s), default is all AZs in region
+        vpc = ec2.Vpc(self, "HoneypotVpc", max_azs=3)
 
         # Create the ECS cluster where fargate can deploy the Docker containers
         cluster = ecs.Cluster(self, "HoneypotCluster", vpc=vpc) 
@@ -22,14 +21,14 @@ class CdkCowrieHoneypotsStack(core.Stack):
         task_definition = ecs.FargateTaskDefinition(self, "HoneypotTasks", cpu=256, memory_limit_mib=512)
 
         # Container definition
-        
         container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
             image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
             #image=ecs.ContainerImage.from_asset(directory = "docker"),
             task_definition=task_definition,
+            stop_timeout=core.Duration.seconds(2),
             logging=ecs.AwsLogDriver(
                 stream_prefix="cowrie",
-                log_retention=logs.RetentionDays.ONE_DAY,
+                log_retention=logs.RetentionDays.ONE_WEEK,
             ),
         )
 
@@ -42,5 +41,6 @@ class CdkCowrieHoneypotsStack(core.Stack):
             assign_public_ip=True, 
             desired_count=1, 
             security_group=sg_ssh, 
-            task_definition=task_definition
+            task_definition=task_definition,
+            platform_version=ecs.FargatePlatformVersion.VERSION1_4
         )
