@@ -11,8 +11,8 @@ class CdkCowrieHoneypotsStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # Create the VPC for the honeypot(s)
-        vpc = ec2.Vpc(self, "HoneypotVpc", max_azs=3)     # default is all AZs in region
+        # Create the VPC for the honeypot(s), default is all AZs in region
+        vpc = ec2.Vpc(self, "HoneypotVpc", max_azs=3)
 
         # Create the ECS cluster where fargate can deploy the Docker containers
         cluster = ecs.Cluster(self, "HoneypotCluster", vpc=vpc) 
@@ -42,5 +42,5 @@ class CdkCowrieHoneypotsStack(core.Stack):
             desired_count=1, 
             security_group=sg_ssh, 
             task_definition=task_definition,
-            platform_version=ecs.FargatePlatformVersion.VERSION1_3
+            platform_version=ecs.FargatePlatformVersion.VERSION1_4
         )

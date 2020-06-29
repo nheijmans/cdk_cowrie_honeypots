@@ -1,4 +1,6 @@
-#FROM debian:bullseye-slim as builder
+# Docker build for Cowrie container that exposes port 22
+# Heavily nspired by the 'docker-cowrie' container file created by Michiel Oosterhof; https://github.com/cowrie/docker-cowrie
+
 FROM ubuntu:latest as builder
 
 ENV COWRIE_GROUP=cowrie \
@@ -17,7 +19,6 @@ RUN groupadd -r -g 1000 ${COWRIE_GROUP} && \
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && \
     apt-get dist-upgrade -y  && \
-
     apt-get install -y \
         -o APT::Install-Suggests=false \
         -o APT::Install-Recommends=false \
@@ -52,7 +53,6 @@ RUN git clone --separate-git-dir=/tmp/cowrie.git https://github.com/cowrie/cowri
 
 
 FROM ubuntu:latest as runtime
-#FROM debian:bullseye-slim AS runtime
 
 ENV COWRIE_GROUP=cowrie \
     COWRIE_USER=cowrie \
@@ -63,6 +63,7 @@ RUN groupadd -r -g 1000 ${COWRIE_GROUP} && \
 
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && \
+    apt-get dist-upgrade -y && \
     apt-get install -y \
         -o APT::Install-Suggests=false \
         -o APT::Install-Recommends=false \
@@ -72,7 +73,9 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
       authbind \
       python3 && \
     rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/bin/python3 /usr/local/bin/python
+    ln -s /usr/bin/python3 /usr/local/bin/python && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y
 
 COPY --from=builder ${COWRIE_HOME} ${COWRIE_HOME}
 RUN chown -R ${COWRIE_USER}:${COWRIE_GROUP} ${COWRIE_HOME}
