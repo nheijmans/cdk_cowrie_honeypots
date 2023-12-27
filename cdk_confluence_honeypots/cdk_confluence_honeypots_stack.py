@@ -9,7 +9,7 @@ from aws_cdk import (
 from constructs import Construct
 
 
-class CdkCowrieHoneypotsStack(Stack):
+class CdkHpConfluenceHoneypotsStack(Stack):
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -24,25 +24,23 @@ class CdkCowrieHoneypotsStack(Stack):
         task_definition = ecs.FargateTaskDefinition(self, "HoneypotTasks", cpu=256, memory_limit_mib=512)
 
         # Container definition
-        
-        container_definition = ecs.ContainerDefinition(self, "HoneypotContainerDefinition",
-            image=ecs.ContainerImage.from_registry("statixs/cowrie"), 
-            #image=ecs.ContainerImage.from_asset(directory = "docker"),
+        confluence_container = ecs.ContainerDefinition(self, "HoneypotConfluenceDefinition",
+            image=ecs.ContainerImage.from_registry("statixs/confluence-pot"), 
             task_definition=task_definition,
             logging=ecs.AwsLogDriver(
-                stream_prefix="cowrie",
+                stream_prefix="hpconfluence",
                 log_retention=logs.RetentionDays.ONE_DAY,
             ),
         )
 
         # ECS Security Group definition
-        sg_ssh = ec2.SecurityGroup(self, "honeypot-sg-ssh", vpc=vpc, description="Allow SSH to the honeypot")
-        sg_ssh.add_ingress_rule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
+        sg_app = ec2.SecurityGroup(self, "honeypot-sg-http", vpc=vpc, description="Allow traffic to the honeypot")
+        sg_app.add_ingress_rule(ec2.Peer.ipv4("10.0.0.0/0"), ec2.Port.tcp(8080))
 
         # Fargate service definition
         fargate_service = ecs.FargateService(self, "HoneypotFargate", cluster=cluster, 
             assign_public_ip=True, 
             desired_count=1, 
-            security_groups=[sg_ssh], 
+            security_groups=[sg_app], 
             task_definition=task_definition
         )
